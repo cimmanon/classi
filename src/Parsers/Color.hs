@@ -1,9 +1,20 @@
-module Parsers.Color where
+module Parsers.Color
+	( color
+	) where
+
+import Control.Applicative ((*>), (<*), (<$>), (<*>))
+import Data.Char
+import Data.Monoid ((<>))
+import Text.Parsec
+import Text.Parsec.String (Parser)
+
+import Types
+import Types.Color
+import Parsers.Common
 
 color :: Parser Color
 color =
 	hexColor <|> rgbColor
-	where
 
 hexColor :: Parser Color
 hexColor = do
@@ -18,29 +29,31 @@ rgbColor :: Parser Color
 rgbColor = do
 	Text.Parsec.string "rgb("
 	spaces
-	colors <- csv digit
+	r <- read <$> many1 digit
+	g <- read <$> do commaDelimiter *> many1 digit
+	b <- read <$> do commaDelimiter *> many1 digit
 	spaces
 	satisfy (== ')')
-	case colors of
-		r:g:b:[] -> return $ Color (read r) (read g) (read b) 0
-		_ -> unexpected $ "Expected 3 colors values for rgb format, received " <> (show $ length colors)
-{-
+	return $ Color r g b 0
+
 rgbaColor :: Parser Color
 rgbaColor = do
-	string "rgba(" <* spaces
-	colors <- csv digit
+	Text.Parsec.string "rgba("
+	spaces
+	r <- read <$> many1 digit
+	g <- read <$> do commaDelimiter *> many1 digit
+	b <- read <$> do commaDelimiter *> many1 digit
+	a <- do commaDelimiter *> decimal
+	spaces
 	satisfy (== ')')
-	case colors of
-		r:g:b:a:[] -> return $ Color (read r) (read g) (read b) 0
-		_ -> unexpected "Invalid format for rgba color (eg. rgb(255, 255, 255, 0.5))"
--}
+	return $ Color r g b (read a)
 
-hslColor :: Parser [Int]
+hslColor :: Parser Color
 hslColor = do
 	Text.Parsec.string "hsl("
 	spaces
-	h <- many1 digit
-	s <- value <$> do commaDelimiter *> percentage
-	l <- value <$> do commaDelimiter *> percentage
+	h <- read <$> many1 digit
+	s <- (round . value) <$> do commaDelimiter *> percentage
+	l <- (round . value) <$> do commaDelimiter *> percentage
 	satisfy (== ')')
-	return $ hslrgb
+	return $ hslrgb h s l
