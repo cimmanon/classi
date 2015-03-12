@@ -2,7 +2,7 @@
 
 module Parsers where
 
-import Control.Applicative ((*>), (<*))
+import Control.Applicative ((*>), (<*), (<$>), (<*>))
 import Data.Char
 import Data.Monoid ((<>))
 import Text.Parsec
@@ -12,7 +12,10 @@ import Types
 
 -- why does the return type need to be `Parser[[a]]` rather than `Parser[a]`?
 csv :: Parser a -> Parser [[a]]
-csv p = many1 p `sepBy1` (spaces *> satisfy (== ',') <* spaces)
+csv p = many1 p `sepBy1` commaDelimiter
+
+commaDelimiter :: Parser Char
+commaDelimiter = spaces *> satisfy (== ',') <* spaces
 
 {----------------------------------------------------------------------------------------------------{
                                                                       | Primitives
@@ -21,6 +24,13 @@ csv p = many1 p `sepBy1` (spaces *> satisfy (== ',') <* spaces)
 property :: Parser String
 property = many1 (satisfy (\x -> x == '-' || isAlpha x))
 	<?> "CSS property (eg. `display` or `-moz-border-radius`)"
+
+
+percentage :: Parser Length
+percentage = Length
+	<$> do read <$> many1 digit
+	<*> string "%"
+	<?> "percentage"
 
 --value :: Parser [Value]
 
@@ -53,9 +63,14 @@ color =
 				r:g:b:a:[] -> return $ Color (read r) (read g) (read b) 0
 				_ -> unexpected "Invalid format for rgba color (eg. rgb(255, 255, 255, 0.5))"
 		-}
+		hslColor = do
+			Text.Parsec.string "hsl("
+			spaces
+			h <- many1 digit
+			s <- value <$> do commaDelimiter *> percentage
+			l <- value <$> do commaDelimiter *> percentage
+			satisfy (== ')')
 
-hex2Int :: String -> Int
-hex2Int s = read $ '0' : 'x' : s
 
 {----------------------------------------------------------------------------------------------------{
                                                                       | Selectors

@@ -1,6 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Types where
+module Types
+	( module Types.Color
+--	, ListDelimiter(..)
+	, Length(..)
+	) where
+
+import Types.Color
 
 -- Going to want to have a mapping type here as well, but that can come later
 --data Value = Color | Length | Int | CString | CList
@@ -21,35 +27,6 @@ data CList = CList
 {----------------------------------------------------------------------------------------------------{
                                                                       | Color
 }----------------------------------------------------------------------------------------------------}
-
-{-
-https://developer.mozilla.org/en-US/docs/Web/CSS/color_value
-
-Color needs to contain the following information:
-
-* red (0-255 integer)
-* blue (0-255 integer)
-* green (0-255 integer)
-* alpha (0-1 double)
-
-It needs to have read(?) instances for the following formats:
-
-* #333
-* #121212
-* rgb(255, 255, 255)
-* rgba(255, 255, 255, 0.5)
-* hsl(120, 100%, 25%)
-* hsla(240, 100%, 50%, 0.7)
-* white, goldenrod
-* transparent (the specification states that transparent is equal to rgba(0, 0, 0, 0))
--}
-
-data Color = Color
-	{ red :: Int
-	, blue :: Int
-	, green :: Int
-	, alpha :: Double
-	} deriving (Show, Eq)
 
 {----------------------------------------------------------------------------------------------------{
                                                                       | Length
