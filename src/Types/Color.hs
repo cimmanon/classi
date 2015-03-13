@@ -3,6 +3,7 @@ module Types.Color
 	, hex2Int
 	, hslrgb
 	, rgbhsl
+	, keywords
 	) where
 
 import Data.Word (Word8)
@@ -130,3 +131,10 @@ rgbhsl r g b = (h, round $ s * 100, round $ l * 100)
 			| l > 0 = c / (1 - abs (2 * l - 1))
 			| otherwise = 0
 		l = (m1 + m2) / 2
+
+-- TODO: add the rest of the color keywords
+keywords :: [(String, Color)]
+keywords =
+	[ ("white", Color 255 255 255 0)
+	, ("black", Color 0 0 0 0)
+	]

@@ -27,3 +27,21 @@ percentage = Length
 	<$> do read <$> many1 digit
 	<*> string "%"
 	<?> "percentage"
+
+{-
+not quite sure exactly what characters we'll want to use for end of token delimiters
+absolutely certain on the following:
+	,
+	\n
+	\t
+	\r
+	space
+	;
+
+maybe tokens:
+	(
+	)
+	/
+-}
+isEndOfToken :: Char -> Bool
+isEndOfToken = (`elem` " ,\n\t\r;()")

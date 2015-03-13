@@ -4,6 +4,7 @@ module Parsers.Color
 
 import Control.Applicative ((*>), (<*), (<$>), (<*>))
 import Data.Char
+import Data.List (lookup)
 import Data.Monoid ((<>))
 import Text.Parsec
 import Text.Parsec.String (Parser)
@@ -14,7 +15,7 @@ import Parsers.Common
 
 color :: Parser Color
 color =
-	(try hexColor) <|> (try rgbColor) <|> (try rgbaColor) <|> (try hslColor) <|> (try hslaColor)
+	(try hexColor) <|> (try rgbColor) <|> (try rgbaColor) <|> (try hslColor) <|> (try hslaColor) <|> (try keyword)
 
 hexColor :: Parser Color
 hexColor = do
@@ -66,3 +67,10 @@ hslaColor = do
 	a <- read <$> do commaDelimiter *> decimal
 	spaces *> satisfy (== ')')
 	return $ (hslrgb h s l) { alpha = a }
+
+keyword :: Parser Color
+keyword = try $ do
+	n <- map toLower <$> many1 letter
+	case n `lookup` keywords of
+		Just c -> return c
+		Nothing -> parserZero
