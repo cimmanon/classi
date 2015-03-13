@@ -27,4 +27,3 @@ percentage = Length
 	<$> do read <$> many1 digit
 	<*> string "%"
 	<?> "percentage"
-

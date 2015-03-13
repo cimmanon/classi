@@ -14,7 +14,7 @@ import Parsers.Common
 
 color :: Parser Color
 color =
-	hexColor <|> rgbColor
+	(try hexColor) <|> (try rgbColor) <|> (try rgbaColor) <|> (try hslColor) <|> (try hslaColor)
 
 hexColor :: Parser Color
 hexColor = do
@@ -27,25 +27,23 @@ hexColor = do
 
 rgbColor :: Parser Color
 rgbColor = do
-	Text.Parsec.string "rgb("
+	try $ Text.Parsec.string "rgb("
 	spaces
 	r <- read <$> many1 digit
 	g <- read <$> do commaDelimiter *> many1 digit
 	b <- read <$> do commaDelimiter *> many1 digit
-	spaces
-	satisfy (== ')')
+	spaces *> satisfy (== ')')
 	return $ Color r g b 0
 
 rgbaColor :: Parser Color
 rgbaColor = do
-	Text.Parsec.string "rgba("
+	try $ Text.Parsec.string "rgba("
 	spaces
 	r <- read <$> many1 digit
 	g <- read <$> do commaDelimiter *> many1 digit
 	b <- read <$> do commaDelimiter *> many1 digit
 	a <- do commaDelimiter *> decimal
-	spaces
-	satisfy (== ')')
+	spaces *> satisfy (== ')')
 	return $ Color r g b (read a)
 
 hslColor :: Parser Color
@@ -55,5 +53,16 @@ hslColor = do
 	h <- read <$> many1 digit
 	s <- (round . value) <$> do commaDelimiter *> percentage
 	l <- (round . value) <$> do commaDelimiter *> percentage
-	satisfy (== ')')
+	spaces *> satisfy (== ')')
 	return $ hslrgb h s l
+
+hslaColor :: Parser Color
+hslaColor = do
+	Text.Parsec.string "hsla("
+	spaces
+	h <- read <$> many1 digit
+	s <- (round . value) <$> do commaDelimiter *> percentage
+	l <- (round . value) <$> do commaDelimiter *> percentage
+	a <- read <$> do commaDelimiter *> decimal
+	spaces *> satisfy (== ')')
+	return $ (hslrgb h s l) { alpha = a }
