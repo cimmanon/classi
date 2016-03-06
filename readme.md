@@ -1,4 +1,4 @@
-# What is this?
+# What is Classi?
 
 A Functional style CSS Preprocessor written in Haskell in the early concept stages.  It is heavily inspired by Sass, which feels like a natural extension of CSS.  None of this "let's get rid of semicolons and curly braces" nonsense.
 
@@ -18,7 +18,7 @@ Both preprocessors have deficiencies that I'd like to solve.  I'm probably not r
 
 The equal sign is used for declaring variables.  Sass uses a colon, but this causes confusion for new users when they want to store the name of a property in a variable.  Users are familiar with the idea of using the dollar sign to indicate variables from other languages.
 
-```fcss
+```cssi
 $foo = 10px;
 $bar = 1px solid black;
 ```
