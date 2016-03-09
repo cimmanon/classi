@@ -80,17 +80,17 @@ hslrgb 100 75 75 -- Color 175 239 143 0
 hslrgb :: Int -> Int -> Int -> Color
 hslrgb h s l = Color r g b 0
 	where
-		h' = (fromIntegral h) / 360
-		s' = (fromIntegral s) / 100
-		l' = (fromIntegral l) / 100
+		h' = fromIntegral h / 360
+		s' = fromIntegral s / 100
+		l' = fromIntegral l / 100
 		m1 = l' * 2 - m2
 		m2 = if l' <= 0.5
 			then l' * (s' + 1)
 			else l' + s' - l' * s'
-		toRGB x = round $ 255 * (hue2rgb m1 m2 x)
-		r = toRGB (h' + 1.0 / 3.0)
+		toRGB x = round $ 255 * hue2rgb m1 m2 x
+		r = toRGB $ h' + 1.0 / 3.0
 		g = toRGB h'
-		b = toRGB (h' - 1.0 / 3.0)
+		b = toRGB $ h' - 1.0 / 3.0
 
 hue2rgb :: Double -> Double -> Double -> Double
 hue2rgb m1 m2 h
@@ -114,9 +114,9 @@ rgbhsl 192 64 192 -- (300,50,50)
 rgbhsl :: Channel -> Channel -> Channel -> (Int, Int, Int)
 rgbhsl r g b = (h, round $ s * 100, round $ l * 100)
 	where
-		r' = (fromIntegral r) / 255
-		g' = (fromIntegral g) / 255
-		b' = (fromIntegral b) / 255
+		r' = fromIntegral r / 255
+		g' = fromIntegral g / 255
+		b' = fromIntegral b / 255
 		m1 = maximum [r', g', b']
 		m2 = minimum [r', g', b']
 		c = m1 - m2
@@ -126,7 +126,7 @@ rgbhsl r g b = (h, round $ s * 100, round $ l * 100)
 			| m1 == r' = (g' - b') / c
 			| m1 == g' = (b' - r') / c + 2
 			| m1 == b' = (r' - g') / c + 4
-		h = (round h') * 60 `mod` 360
+		h = round h' * 60 `mod` 360
 		s
 			| l > 0 = c / (1 - abs (2 * l - 1))
 			| otherwise = 0
