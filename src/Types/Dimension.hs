@@ -1,5 +1,5 @@
-module Types.Length
-	( Length(..)
+module Types.Dimension
+	( Dimension(..)
 	, convertUnit
 	) where
 
@@ -7,13 +7,15 @@ import Data.Functor ((<$>))
 import Data.Monoid ((<>))
 
 {-
-https://developer.mozilla.org/en-US/docs/Web/CSS/length
+https://www.w3.org/TR/css3-values/
+
+https://developer.mozilla.org/en-US/docs/Web/CSS/dimension
 https://developer.mozilla.org/en-US/docs/Web/CSS/percentage
 https://developer.mozilla.org/en-US/docs/Web/CSS/angle
 https://developer.mozilla.org/en-US/docs/Web/CSS/timing-function
 https://developer.mozilla.org/en-US/docs/Web/CSS/time
 
-A length is an algebraic data type consisting of a number value and a unit
+A dimension is an algebraic data type consisting of a number value and a unit
 
 * 12px
 * 1.1em
@@ -24,38 +26,36 @@ A length is an algebraic data type consisting of a number value and a unit
 }----------------------------------------------------------------------------------------------------}
 
 -- TODO: figure out what to do with missing units
-data Length = Length
+data Dimension = Dimension
 	{ value :: Double
 	, unit :: String
 	} deriving (Show, Eq)
 
-lengthArithemetic :: (Double -> Double -> Double) -> Length -> Length -> Length
-lengthArithemetic op (Length v1 u1) (Length v2 u2)
-	| u1 == "" || u1 == u2 = Length (op v1 v2) u2
-	| u2 == "" = Length (op v1 v2) u1
+dimensionArithemetic :: (Double -> Double -> Double) -> Dimension -> Dimension -> Dimension
+dimensionArithemetic op (Dimension v1 u1) (Dimension v2 u2)
+	| u1 == "" || u1 == u2 = Dimension (op v1 v2) u2
+	| u2 == "" = Dimension (op v1 v2) u1
 	| otherwise = case convertUnit v2 u2 u1 of
 		-- is an exception a good idea here?
 		Nothing -> error $ "Cannot convert " <> u1 <> " to " <> u2
-		Just v2' -> Length (op v1 v2') u1
+		Just v2' -> Dimension (op v1 v2') u1
 
-instance Num Length where
-	n1 + n2 = lengthArithemetic (+) n1 n2
-	n1 * n2 = lengthArithemetic (*) n1 n2
-	negate (Length f u) = Length (negate f) u
-	abs (Length f u) = Length (abs f) u
-	signum (Length f u) = Length (signum f) u
-	fromInteger f = Length (fromInteger f) []
+instance Num Dimension where
+	n1 + n2 = dimensionArithemetic (+) n1 n2
+	n1 * n2 = dimensionArithemetic (*) n1 n2
+	negate (Dimension f u) = Dimension (negate f) u
+	abs (Dimension f u) = Dimension (abs f) u
+	signum (Dimension f u) = Dimension (signum f) u
+	fromInteger f = Dimension (fromInteger f) []
 
-instance Fractional Length where
+instance Fractional Dimension where
 	--  TODO: fix division here so that we can remove units
-	n1 / n2 = lengthArithemetic (/) n1 n2
-	fromRational n = Length (fromRational n) []
+	n1 / n2 = dimensionArithemetic (/) n1 n2
+	fromRational n = Dimension (fromRational n) []
 
 --------------------------------------------------------------------- | Unit Conversion
 
 {-
-https://www.w3.org/TR/css3-values/
-
 Some values can be converted from one to another, which would allow arithmetic operations between them:
 
 * cm <-> in <-> mm <-> pt <-> pc

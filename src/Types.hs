@@ -3,13 +3,13 @@
 module Types
 	( module Types.Color
 --	, ListDelimiter(..)
-	, module Types.Length
+	, module Types.Dimension
 	) where
 
 import Data.Text (Text)
 
 import Types.Color
-import Types.Length
+import Types.Dimension
 
 data ListDelimiter = Comma | Space
 
@@ -18,7 +18,7 @@ data Expression = Expression [Text]
 data CssType a where
 	CssString :: Text -> CssType Text
 	CssColor :: Color -> CssType Color
-	CssLength :: Length -> CssType Length
+	CssDimension :: Dimension -> CssType Dimension
 	CssCalc :: Expression -> CssType Expression
 	-- ^ TODO: figure out how to actually handle calc() expressions
 	-- CssCalc is going to need an instance of Num and Fractal
@@ -32,7 +32,7 @@ data CssType a where
 instance (Show a) => Show (CssType a) where
 	show (CssString s) = show s
 	show (CssColor c) = show c
-	show (CssLength l) = show l
+	show (CssDimension l) = show l
 	show (CssCalc e) = show e
 	show (CssList xs) = show xs
 	show (CssMapping xs) = show xs
@@ -50,6 +50,6 @@ lighten' (CssColor c) = c
 }----------------------------------------------------------------------------------------------------}
 
 {----------------------------------------------------------------------------------------------------{
-                                                                      | Length
+                                                                      | Dimension
 }----------------------------------------------------------------------------------------------------}
 

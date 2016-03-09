@@ -22,8 +22,8 @@ csv p = many1 p `sepBy1` commaDelimiter
 commaDelimiter :: Parser Char
 commaDelimiter = spaces *> satisfy (== ',') <* spaces
 
-percentage :: Parser Length
-percentage = Length
+percentage :: Parser Dimension
+percentage = Dimension
 	<$> do read <$> many1 digit
 	<*> string "%"
 	<?> "percentage"
