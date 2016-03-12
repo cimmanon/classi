@@ -1,10 +1,11 @@
 module Types.Color
-	( Color(..)
+{-	( Color(..)
 	, hex2Int
 	, hslrgb
 	, rgbhsl
+	, lighten
 	, keywords
-	) where
+	)-} where
 
 import Data.Word (Word8)
 
@@ -52,7 +53,7 @@ data RGB = RGB
 data HSL = HSL
 	{ hue :: Int
 	, saturation :: Double
-	, brightness :: Double
+	, lightness :: Double
 	}
 -}
 
@@ -64,35 +65,35 @@ Convert a color from HSL to RGB
 
 Formula from the W3C: http://www.w3.org/TR/css3-color/#hsl-color
 
-h = 0-360
-s = 0-100
-l = 0-100
+h = 0.0-360.0
+s = 0.0-100.0
+l = 0.0-100.0
 
 hslrgb 0 50 50 -- Color 191 64 64 0
 hslrgb 0 0 50 -- Color 128 128 128 0
 hslrgb 20 15 30 -- Color 88 73 65 0
-hslrgb 50 5 50 -- Color 132 134 121 0
+hslrgb 50 5 50 -- Color 134 132 121 0
 hslrgb 50 10 50 -- Color 140 136 115 0
 hslrgb 100 50 50 -- Color 106 191 64 0
 hslrgb 100 50 75 -- Color 181 223 159 0
 hslrgb 100 75 75 -- Color 175 239 143 0
 -}
-hslrgb :: Int -> Int -> Int -> Color
+hslrgb :: (Integral a, RealFrac b) => a -> b -> b -> Color
 hslrgb h s l = Color r g b 0
 	where
 		h' = fromIntegral h / 360
-		s' = fromIntegral s / 100
-		l' = fromIntegral l / 100
+		s' = s / 100
+		l' = l / 100
 		m1 = l' * 2 - m2
 		m2 = if l' <= 0.5
 			then l' * (s' + 1)
 			else l' + s' - l' * s'
-		toRGB x = round $ 255 * hue2rgb m1 m2 x
-		r = toRGB $ h' + 1.0 / 3.0
-		g = toRGB h'
-		b = toRGB $ h' - 1.0 / 3.0
+		toChannel x = round $ 256 * hue2rgb m1 m2 x
+		r = toChannel $ h' + 1.0 / 3.0
+		g = toChannel h'
+		b = toChannel $ h' - 1.0 / 3.0
 
-hue2rgb :: Double -> Double -> Double -> Double
+hue2rgb :: (RealFrac a) => a -> a -> a -> a
 hue2rgb m1 m2 h
 	| h' * 6 < 1 = m1 + (m2 - m1) * h' * 6
 	| h' * 2 < 1 = m2
@@ -111,8 +112,8 @@ Formula: http://en.wikipedia.org/wiki/HSL_and_HSV
 
 rgbhsl 192 64 192 -- (300,50,50)
 -}
-rgbhsl :: Channel -> Channel -> Channel -> (Int, Int, Int)
-rgbhsl r g b = (h, round $ s * 100, round $ l * 100)
+rgbhsl :: (Integral a, RealFrac b) => Channel -> Channel -> Channel -> (a, b, b)
+rgbhsl r g b = (h, s * 100, l * 100)
 	where
 		r' = fromIntegral r / 255
 		g' = fromIntegral g / 255
@@ -127,10 +128,58 @@ rgbhsl r g b = (h, round $ s * 100, round $ l * 100)
 			| m1 == g' = (b' - r') / c + 2
 			| m1 == b' = (r' - g') / c + 4
 		h = round h' * 60 `mod` 360
+		-- the use of `round` here forces our `a` to be an Integral
+		-- is this acceptable?
 		s
 			| l > 0 = c / (1 - abs (2 * l - 1))
 			| otherwise = 0
 		l = (m1 + m2) / 2
+
+{----------------------------------------------------------------------------------------------------{
+                                                                      | Color adjustments
+}----------------------------------------------------------------------------------------------------}
+
+adjustColor :: (Integral a, RealFrac b) => Color -> (a -> a) -> (b -> b) -> (b -> b) -> Color
+adjustColor c adjustH adjustS adjustL =
+	hslrgb (adjustH h) (clamp $ adjustS s) (clamp $ adjustL l)
+	where
+		(h, s, l) = rgbhsl (red c) (green c) (blue c)
+		clamp = min 0 . max 100
+
+--------------------------------------------------------------------- | Hue
+
+adjustHue :: (Integral a) => Color -> a -> Color
+adjustHue c x = adjustColor c (+ x) id id
+
+-- Sass doesn't have specific functions that adjust the hue in one direction or the other
+
+--------------------------------------------------------------------- | Saturation
+
+adjustSaturation :: (RealFrac a) => Color -> a -> Color
+adjustSaturation c x = adjustColor c id (+ x) id
+
+-- convenient shortcuts
+saturate :: (RealFrac a) => Color -> a -> Color
+saturate = adjustSaturation
+
+desaturate :: (RealFrac a) => Color -> a -> Color
+desaturate c x = adjustSaturation c (-x)
+
+--------------------------------------------------------------------- | Lightness
+
+adjustLightness :: (RealFrac a) => Color -> a -> Color
+adjustLightness c x = adjustColor c id id (+ x)
+
+-- convenient shortcuts
+lighten :: (RealFrac a) => Color -> a -> Color
+lighten = adjustLightness
+
+darken :: (RealFrac a) => Color -> a -> Color
+darken c x = adjustLightness c (-x)
+
+{----------------------------------------------------------------------------------------------------{
+                                                                      | Color names
+}----------------------------------------------------------------------------------------------------}
 
 -- TODO: add the rest of the color keywords
 keywords :: [(String, Color)]
@@ -138,3 +187,163 @@ keywords =
 	[ ("white", Color 255 255 255 0)
 	, ("black", Color 0 0 0 0)
 	]
+
+{-
+-- TODO: add the rest of the color keywords
+keywords' :: [(String, String)]
+keywords' =
+	[ ("aliceblue", "#f0f8ff")
+	, ("antiquewhite", "#faebd7")
+	, ("aquamarine", "#7fffd4")
+	, ("azure", "#f0ffff")
+	, ("beige", "#f5f5dc")
+	, ("bisque", "#ffe4c4")
+	, ("black", "#000000")
+	, ("blanchedalmond", "#ffebcd")
+	, ("blue", "#0000ff")
+	, ("blueviolet", "#8a2be2")
+	, ("brown", "#a52a2a")
+	, ("burlywood", "#deb887")
+	, ("cadetblue", "#5f9ea0")
+	, ("chartreuse", "#7fff00")
+	, ("chocolate", "#d2691e")
+	, ("coral", "#ff7f50")
+	, ("cornflowerblue", "#6495ed")
+	, ("cornsilk", "#fff8dc")
+	, ("crimson", "#dc143c")
+	, ("cyan", "#00ffff")
+	, ("darkblue", "#00008b")
+	, ("darkcyan", "#008b8b")
+	, ("darkgoldenrod", "#b8860b")
+	, ("darkgray", "#a9a9a9")
+	, ("darkgreen", "#006400")
+	, ("darkkhaki", "#bdb76b")
+	, ("darkmagenta", "#8b008b")
+	, ("darkolivegreen", "#556b2f")
+	, ("darkorange", "#ff8c00")
+	, ("darkorchid", "#9932cc")
+	, ("darkred", "#8b0000")
+	, ("darksalmon", "#e9967a")
+	, ("darkseagreen", "#8fbc8f")
+	, ("darkslateblue", "#483d8b")
+	, ("darkslategray", "#2f4f4f")
+	, ("darkturquoise", "#00ced1")
+	, ("darkviolet", "#9400d3")
+	, ("deeppink", "#ff1493")
+	, ("deepskyblue", "#00bfff")
+	, ("dimgray", "#696969")
+	, ("dodgerblue", "#1e90ff")
+	, ("firebrick", "#b22222")
+	, ("floralwhite", "#fffaf0")
+	, ("forestgreen", "#228b22")
+	, ("fuchsia", "#ff00ff")
+	, ("gainsboro", "#dcdcdc")
+	, ("ghostwhite", "#f8f8ff")
+	, ("gold", "#ffd700")
+	, ("goldenrod", "#daa520")
+	, ("gray", "#808080")
+	, ("green", "#008000")
+	, ("greenyellow", "#adff2f")
+	, ("honeydew", "#f0fff0")
+	, ("hotpink", "#ff69b4")
+	, ("indianred", "#cd5c5c")
+	, ("indigo", "#4b0082")
+	, ("ivory", "#fffff0")
+	, ("khaki", "#f0e68c")
+	, ("lavender", "#e6e6fa")
+	, ("lavenderblush", "#fff0f5")
+	, ("lawngreen", "#7cfc00")
+	, ("lemonchiffon", "#fffacd")
+	, ("lightblue", "#add8e6")
+	, ("lightcoral", "#f08080")
+	, ("lightcyan", "#e0ffff")
+	, ("lightgoldenrodyellow", "#fafad2")
+	, ("lightgreen", "#90ee90")
+	, ("lightgrey", "#d3d3d3")
+	, ("lightpink", "#ffb6c1")
+	, ("lightsalmon", "#ffa07a")
+	, ("lightseagreen", "#20b2aa")
+	, ("lightskyblue", "#87cefa")
+	, ("lightslategray", "#778899")
+	, ("lightsteelblue", "#b0c4de")
+	, ("lightyellow", "#ffffe0")
+	, ("lime", "#00ff00")
+	, ("limegreen", "#32cd32")
+	, ("linen", "#faf0e6")
+	, ("magenta", "#ff00ff")
+	, ("maroon", "#800000")
+	, ("mediumaquamarine", "#66cdaa")
+	, ("mediumblue", "#0000cd")
+	, ("mediumorchid", "#ba55d3")
+	, ("mediumpurple", "#9370db")
+	, ("mediumseagreen", "#3cb371")
+	, ("mediumslateblue", "#7b68ee")
+	, ("mediumspringgreen", "#00fa9a")
+	, ("mediumturquoise", "#48d1cc")
+	, ("mediumvioletred", "#c71585")
+	, ("midnightblue", "#191970")
+	, ("mintcream", "#f5fffa")
+	, ("mistyrose", "#ffe4e1")
+	, ("moccasin", "#ffe4b5")
+	, ("navajowhite", "#ffdead")
+	, ("navy", "#000080")
+	, ("oldlace", "#fdf5e6")
+	, ("olive", "#808000")
+	, ("olivedrab", "#6b8e23")
+	, ("orange", "#ffa500")
+	, ("orangered", "#ff4500")
+	, ("orchid", "#da70d6")
+	, ("palegoldenrod", "#eee8aa")
+	, ("palegreen", "#98fb98")
+	, ("paleturquoise", "#afeeee")
+	, ("palevioletred", "#db7093")
+	, ("papayawhip", "#ffefd5")
+	, ("peachpuff", "#ffdab9")
+	, ("peru", "#cd853f")
+	, ("pink", "#ffc0cb")
+	, ("plum", "#dda0dd")
+	, ("powderblue", "#b0e0e6")
+	, ("purple", "#800080")
+	, ("red", "#ff0000")
+	, ("rebeccapurple", "#663399")
+	, ("rosybrown", "#bc8f8f")
+	, ("royalblue", "#4169e1")
+	, ("saddlebrown", "#8b4513")
+	, ("salmon", "#fa8072")
+	, ("sandybrown", "#f4a460")
+	, ("seagreen", "#2e8b57")
+	, ("seashell", "#fff5ee")
+	, ("sienna", "#a0522d")
+	, ("silver", "#c0c0c0")
+	, ("skyblue", "#87ceeb")
+	, ("slateblue", "#6a5acd")
+	, ("slategray", "#708090")
+	, ("snow", "#fffafa")
+	, ("springgreen", "#00ff7f")
+	, ("steelblue", "#4682b4")
+	, ("tan", "#d2b48c")
+	, ("teal", "#008080")
+	, ("thistle", "#d8bfd8")
+	, ("tomato", "#ff6347")
+	, ("turquoise", "#40e0d0")
+	, ("violet", "#ee82ee")
+	, ("wheat", "#f5deb3")
+	, ("white", "#ffffff")
+	, ("whitesmoke", "#f5f5f5")
+	, ("yellow", "#ffff00")
+	, ("yellowgreen", "#9acd32")
+	]
+
+alternateKeywords :: [(String, String)]
+alternateKeywords =
+	[ ("aqua", "#00ffff")
+	, ("darkgrey", "#a9a9a9")
+	, ("darkslategrey", "#2f4f4f")
+	, ("dimgrey", "#696969")
+	, ("fuchsia", "#ff00ff")
+	, ("grey", "#808080")
+	, ("lightgrey", "#d3d3d3")
+	, ("lightslategrey", "#778899")
+	, ("slategrey", "#708090")
+	]
+-}

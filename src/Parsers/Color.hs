@@ -52,8 +52,8 @@ hslColor = do
 	Text.Parsec.string "hsl("
 	spaces
 	h <- read <$> many1 digit
-	s <- (round . value) <$> do commaDelimiter *> percentage
-	l <- (round . value) <$> do commaDelimiter *> percentage
+	s <- value <$> do commaDelimiter *> percentage
+	l <- value <$> do commaDelimiter *> percentage
 	spaces *> satisfy (== ')')
 	return $ hslrgb h s l
 
@@ -62,8 +62,8 @@ hslaColor = do
 	Text.Parsec.string "hsla("
 	spaces
 	h <- read <$> many1 digit
-	s <- (round . value) <$> do commaDelimiter *> percentage
-	l <- (round . value) <$> do commaDelimiter *> percentage
+	s <- value <$> do commaDelimiter *> percentage
+	l <- value <$> do commaDelimiter *> percentage
 	a <- read <$> do commaDelimiter *> decimal
 	spaces *> satisfy (== ')')
 	return $ (hslrgb h s l) { alpha = a }

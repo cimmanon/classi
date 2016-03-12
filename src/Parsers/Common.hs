@@ -24,7 +24,7 @@ commaDelimiter = spaces *> satisfy (== ',') <* spaces
 
 percentage :: Parser Dimension
 percentage = Dimension
-	<$> do read <$> many1 digit
+	<$> do read <$> (try decimal <|> many1 digit)
 	<*> string "%"
 	<?> "percentage"
 
