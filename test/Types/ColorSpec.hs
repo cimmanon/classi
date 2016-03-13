@@ -38,6 +38,7 @@ spec = do
 		teal = Color 0 128 128 0
 		navy = Color 0 0 128 0
 
+	-- test data pulled from http://www.rapidtables.com/convert/color/hsl-to-rgb.htm
 	describe "HSL to RGB" $ do
 		it "Red" $
 			hslrgb 0 100 50 `shouldBe` red
