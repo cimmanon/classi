@@ -98,13 +98,6 @@ hue2rgb m1 m2 h
 			| h > 1 = h - 1
 			| otherwise = h
 
-{-
-*Main> hslrgb 0 0 $ 19.6078431372549019607843137254901960784313725490196078431372549019607843137254901960784313725490196078431372549019607843137254901960784313725490196078431372549019607843137254901960784313725490196078431372549019607843137254901960784313725490196078431372549 + 10
-Color {red = 75, blue = 75, green = 75, alpha = 0.0}
-*Main> hslrgb 0 0 $ 19.60784314 + 10
-Color {red = 76, blue = 76, green = 76, alpha = 0.0}
--}
-
 {----------------------------------------------------------------------------------------------------{
                                                                       | RGB to HSL
 }----------------------------------------------------------------------------------------------------}
@@ -117,22 +110,26 @@ rgbhsl r g b = (h, s * 100, l * 100)
 		r' = fromIntegral r / 255
 		g' = fromIntegral g / 255
 		b' = fromIntegral b / 255
-		m1 = maximum [r', g', b']
-		m2 = minimum [r', g', b']
-		c = m1 - m2
+		cMax = maximum [r', g', b']
+		cMin = minimum [r', g', b']
+		delta = cMax - cMin
 
 		h'
-			| m1 == m2 = 0
-			| m1 == r' = (g' - b') / c
-			| m1 == g' = (b' - r') / c + 2
-			| m1 == b' = (r' - g') / c + 4
+			| cMax == cMin = 0
+			| cMax == r' = ((g' - b') / delta) `rMod` 6
+			| cMax == g' = (b' - r') / delta + 2
+			| cMax == b' = (r' - g') / delta + 4
 		h = round h' * 60 `mod` 360
 		-- the use of `round` here forces our `a` to be an Integral
 		-- is this acceptable?
 		s
-			| l > 0 = c / (1 - abs (2 * l - 1))
+			| l > 0 = delta / (1 - abs (2 * l - 1))
 			| otherwise = 0
-		l = (m1 + m2) / 2
+		l = (cMax + cMin) / 2
+
+-- a `mod` function for RealFrac types
+rMod :: (RealFrac a) => a -> a -> a
+rMod a b = a - fromIntegral (truncate $ a / b)
 
 {----------------------------------------------------------------------------------------------------{
                                                                       | Color adjustments
