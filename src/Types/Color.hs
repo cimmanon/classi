@@ -38,8 +38,8 @@ type Channel = Word8
 -- (which will always compute to red) vs HSL black
 data Color = Color
 	{ red :: Channel
-	, blue :: Channel
 	, green :: Channel
+	, blue :: Channel
 	, alpha :: Double
 	} deriving (Show, Eq)
 
@@ -60,23 +60,16 @@ data HSL = HSL
 hex2Int :: String -> Word8
 hex2Int s = read $ '0' : 'x' : s
 
-{-
-Convert a color from HSL to RGB
+{----------------------------------------------------------------------------------------------------{
+                                                                      | HSL to RGB
+}----------------------------------------------------------------------------------------------------}
 
+{-
 Formula from the W3C: http://www.w3.org/TR/css3-color/#hsl-color
 
 h = 0.0-360.0
 s = 0.0-100.0
 l = 0.0-100.0
-
-hslrgb 0 50 50 -- Color 191 64 64 0
-hslrgb 0 0 50 -- Color 128 128 128 0
-hslrgb 20 15 30 -- Color 88 73 65 0
-hslrgb 50 5 50 -- Color 134 132 121 0
-hslrgb 50 10 50 -- Color 140 136 115 0
-hslrgb 100 50 50 -- Color 106 191 64 0
-hslrgb 100 50 75 -- Color 181 223 159 0
-hslrgb 100 75 75 -- Color 175 239 143 0
 -}
 hslrgb :: (Integral a, RealFrac b) => a -> b -> b -> Color
 hslrgb h s l = Color r g b 0
@@ -106,12 +99,18 @@ hue2rgb m1 m2 h
 			| otherwise = h
 
 {-
-Convert a color from RGB to HSL
-
-Formula: http://en.wikipedia.org/wiki/HSL_and_HSV
-
-rgbhsl 192 64 192 -- (300,50,50)
+*Main> hslrgb 0 0 $ 19.6078431372549019607843137254901960784313725490196078431372549019607843137254901960784313725490196078431372549019607843137254901960784313725490196078431372549019607843137254901960784313725490196078431372549019607843137254901960784313725490196078431372549 + 10
+Color {red = 75, blue = 75, green = 75, alpha = 0.0}
+*Main> hslrgb 0 0 $ 19.60784314 + 10
+Color {red = 76, blue = 76, green = 76, alpha = 0.0}
 -}
+
+{----------------------------------------------------------------------------------------------------{
+                                                                      | RGB to HSL
+}----------------------------------------------------------------------------------------------------}
+
+-- Formula: http://en.wikipedia.org/wiki/HSL_and_HSV
+
 rgbhsl :: (Integral a, RealFrac b) => Channel -> Channel -> Channel -> (a, b, b)
 rgbhsl r g b = (h, s * 100, l * 100)
 	where
@@ -144,7 +143,7 @@ adjustColor c adjustH adjustS adjustL =
 	hslrgb (adjustH h) (clamp $ adjustS s) (clamp $ adjustL l)
 	where
 		(h, s, l) = rgbhsl (red c) (green c) (blue c)
-		clamp = min 0 . max 100
+		clamp = min 100 . max 0
 
 --------------------------------------------------------------------- | Hue
 
