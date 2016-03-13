@@ -74,14 +74,16 @@ l = 0.0-100.0
 hslrgb :: (Integral a, RealFrac b) => a -> b -> b -> Color
 hslrgb h s l = Color r g b 0
 	where
+		-- normalize h, s, l to be fractions 0..1
 		h' = fromIntegral h / 360
 		s' = s / 100
 		l' = l / 100
+
 		m1 = l' * 2 - m2
 		m2 = if l' <= 0.5
 			then l' * (s' + 1)
 			else l' + s' - l' * s'
-		toChannel x = round $ 256 * hue2rgb m1 m2 x
+		toChannel x = properRound $ 255 * hue2rgb m1 m2 x
 		r = toChannel $ h' + 1.0 / 3.0
 		g = toChannel h'
 		b = toChannel $ h' - 1.0 / 3.0
@@ -97,6 +99,16 @@ hue2rgb m1 m2 h
 			| h < 0 = h + 1
 			| h > 1 = h - 1
 			| otherwise = h
+
+-- since `round` rounds down on 2.5, we need to write a proper rounding function that will round up
+properRound :: (RealFrac a, Integral b) => a -> b
+properRound x =
+	let
+		(whole, frac) = properFraction x
+	in
+		if frac >= 0.5
+			then whole + 1
+			else whole
 
 {----------------------------------------------------------------------------------------------------{
                                                                       | RGB to HSL
