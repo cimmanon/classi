@@ -3,7 +3,6 @@ module Types.ColorSpec where
 import Test.Hspec
 
 import Types.Color
-import Data.Decimal
 
 main :: IO ()
 main = hspec spec
@@ -25,15 +24,18 @@ spec = do
 		red = (255, 0, 0)
 		lime = (0, 255, 0)
 		blue = (0, 0, 255)
+
 		yellow = (255, 255, 0)
 		cyan = (0, 255, 255)
 		magenta = (255, 0, 255)
+
 		maroon = (128, 0, 0)
-		olive = (128, 128, 0)
 		green = (0, 128, 0)
+		navy = (0, 0, 128)
+
+		olive = (128, 128, 0)
 		purple = (128, 0, 128)
 		teal = (0, 128, 128)
-		navy = (0, 0, 128)
 
 	-- test data pulled from http://www.rapidtables.com/convert/color/hsl-to-rgb.htm
 	describe "HSL to RGB" $ do
@@ -51,16 +53,16 @@ spec = do
 			hslrgb (300, 100, 50) `shouldBe` magenta
 		it "Maroon" $
 			hslrgb (0, 100, 25) `shouldBe` maroon
-		it "Olive" $
-			hslrgb (60, 100, 25) `shouldBe` olive
 		it "Green" $
 			hslrgb (120, 100, 25) `shouldBe` green
+		it "Navy" $
+			hslrgb (240, 100, 25) `shouldBe` navy
+		it "Olive" $
+			hslrgb (60, 100, 25) `shouldBe` olive
 		it "Purple" $
 			hslrgb (300, 100, 25) `shouldBe` purple
 		it "Teal" $
 			hslrgb (180, 100, 25) `shouldBe` teal
-		it "Navy" $
-			hslrgb (240, 100, 25) `shouldBe` navy
 
 	describe "RGB to HSL" $ do
 		it "Red" $
@@ -77,16 +79,16 @@ spec = do
 			rgbhslrgb magenta `shouldBe` magenta
 		it "Maroon" $
 			rgbhslrgb maroon `shouldBe` maroon
-		it "Olive" $
-			rgbhslrgb olive `shouldBe` olive
 		it "Green" $
 			rgbhslrgb green `shouldBe` green
+		it "Navy" $
+			rgbhslrgb navy `shouldBe` navy
+		it "Olive" $
+			rgbhslrgb olive `shouldBe` olive
 		it "Purple" $
 			rgbhslrgb purple `shouldBe` purple
 		it "Teal" $
 			rgbhslrgb teal `shouldBe` teal
-		it "Navy" $
-			rgbhslrgb navy `shouldBe` navy
 
 	describe "Adjust Hue" $ do
 		it "Increase hue of Red by 10deg" $
