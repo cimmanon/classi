@@ -3,67 +3,64 @@ module Types.ColorSpec where
 import Test.Hspec
 
 import Types.Color
+import Data.Decimal
 
 main :: IO ()
 main = hspec spec
 
 -- for testing HSL -> RGB conversion
-rgbhslrgb :: Color -> Color
-rgbhslrgb c =
-	let
-		(h, s, l) = rgbhsl (red c) (green c) (blue c)
-	in
-		hslrgb h s l
+rgbhslrgb :: (Channel, Channel, Channel) -> (Channel, Channel, Channel)
+rgbhslrgb = hslrgb . rgbhsl
 
 spec :: Spec
 spec = do
 	let
 		-- neutrals
-		white = Color 255 255 255 0
-		black = Color 0 0 0 0
-		silver = Color 192 192 192 0
-		gray = Color 128 128 128 0
+		white = (255, 255, 255)
+		black = (0, 0, 0)
+		silver = (192, 192, 192)
+		gray = (128, 128, 128)
 
 		-- colors
-		red = Color 255 0 0 0
-		lime = Color 0 255 0 0
-		blue = Color 0 0 255 0
-		yellow = Color 255 255 0 0
-		cyan = Color 0 255 255 0
-		magenta = Color 255 0 255 0
-		maroon = Color 128 0 0 0
-		olive = Color 128 128 0 0
-		green = Color 0 128 0 0
-		purple = Color 128 0 128 0
-		teal = Color 0 128 128 0
-		navy = Color 0 0 128 0
+		red = (255, 0, 0)
+		lime = (0, 255, 0)
+		blue = (0, 0, 255)
+		yellow = (255, 255, 0)
+		cyan = (0, 255, 255)
+		magenta = (255, 0, 255)
+		maroon = (128, 0, 0)
+		olive = (128, 128, 0)
+		green = (0, 128, 0)
+		purple = (128, 0, 128)
+		teal = (0, 128, 128)
+		navy = (0, 0, 128)
 
 	-- test data pulled from http://www.rapidtables.com/convert/color/hsl-to-rgb.htm
 	describe "HSL to RGB" $ do
 		it "Red" $
-			hslrgb 0 100 50 `shouldBe` red
+			hslrgb (0, 100, 50) `shouldBe` red
 		it "Lime" $
-			hslrgb 120 100 50 `shouldBe` lime
+			hslrgb (120, 100, 50) `shouldBe` lime
 		it "Blue" $
-			hslrgb 240 100 50 `shouldBe` blue
+			hslrgb (240, 100, 50) `shouldBe` blue
 		it "Yellow" $
-			hslrgb 60 100 50 `shouldBe` yellow
+			hslrgb (60, 100, 50) `shouldBe` yellow
 		it "Cyan" $
-			hslrgb 180 100 50 `shouldBe` cyan
+			hslrgb (180, 100, 50) `shouldBe` cyan
 		it "Magenta" $
-			hslrgb 300 100 50 `shouldBe` magenta
+			hslrgb (300, 100, 50) `shouldBe` magenta
 		it "Maroon" $
-			hslrgb 0 100 25 `shouldBe` maroon
+			hslrgb (0, 100, 25) `shouldBe` maroon
 		it "Olive" $
-			hslrgb 60 100 25 `shouldBe` olive
+			hslrgb (60, 100, 25) `shouldBe` olive
 		it "Green" $
-			hslrgb 120 100 25 `shouldBe` green
+			hslrgb (120, 100, 25) `shouldBe` green
 		it "Purple" $
-			hslrgb 300 100 25 `shouldBe` purple
+			hslrgb (300, 100, 25) `shouldBe` purple
 		it "Teal" $
-			hslrgb 180 100 25 `shouldBe` teal
+			hslrgb (180, 100, 25) `shouldBe` teal
 		it "Navy" $
-			hslrgb 240 100 25 `shouldBe` navy
+			hslrgb (240, 100, 25) `shouldBe` navy
 
 	describe "RGB to HSL" $ do
 		it "Red" $
@@ -93,48 +90,48 @@ spec = do
 
 	describe "Adjust Hue" $ do
 		it "Increase hue of Red by 10deg" $
-			adjustHue red 10 `shouldBe` Color 255 43 0 0
+			adjustHue (rgbhsl red) 10 `shouldBe` (10, 100, 50)
 		it "Increase hue of Red by 20deg" $
-			adjustHue red 20 `shouldBe` Color 255 85 0 0
+			adjustHue (rgbhsl red) 20 `shouldBe` (20, 100, 50)
 		it "Increase hue of Red by 30deg" $
-			adjustHue red 30 `shouldBe` Color 255 128 0 0
+			adjustHue (rgbhsl red) 30 `shouldBe` (30, 100, 50)
 		it "Increase hue of Red by 40deg" $
-			adjustHue red 40 `shouldBe` Color 255 170 0 0
+			adjustHue (rgbhsl red) 40 `shouldBe` (40, 100, 50)
 		it "Increase hue of Red by 50deg" $
-			adjustHue red 50 `shouldBe` Color 255 213 0 0
+			adjustHue (rgbhsl red) 50 `shouldBe` (50, 100, 50)
 		it "Increase hue of Red by 60deg" $
-			adjustHue red 60 `shouldBe` Color 255 255 0 0
+			adjustHue (rgbhsl red) 60 `shouldBe` (60, 100, 50)
 		it "Increase hue of Red by 80deg" $
-			adjustHue red 80 `shouldBe` Color 170 255 0 0
+			adjustHue (rgbhsl red) 80 `shouldBe` (80, 100, 50)
 		it "Increase hue of Red by 100deg" $
-			adjustHue red 100 `shouldBe` Color 85 255 0 0
+			adjustHue (rgbhsl red) 100 `shouldBe` (100, 100, 50)
 
 	describe "Adjust Saturation" $ do
 		it "Decrease saturation of Red by 10%" $
-			desaturate red 10 `shouldBe` Color 242 13 13 0
+			desaturate (rgbhsl red) 10 `shouldBe` (0, 90, 50)
 		it "Decrease saturation of Red by 20%" $
-			desaturate red 20 `shouldBe` Color 230 26 26 0
+			desaturate (rgbhsl red) 20 `shouldBe` (0, 80, 50)
 		it "Decrease saturation of Red by 30%" $
-			desaturate red 30 `shouldBe` Color 217 38 38 0
+			desaturate (rgbhsl red) 30 `shouldBe` (0, 70, 50)
 		it "Decrease saturation of Red by 40%" $
-			desaturate red 40 `shouldBe` Color 204 51 51 0
+			desaturate (rgbhsl red) 40 `shouldBe` (0, 60, 50)
 		it "Decrease saturation of Red by 50%" $
-			desaturate red 50 `shouldBe` Color 191 64 64 0
+			desaturate (rgbhsl red) 50 `shouldBe` (0, 50, 50)
 
 	describe "Adjust Lightness" $ do
 		let
-			grey = Color 50 50 50 1
+			grey = (50, 50, 50)
 
 		it "Increase lightness of Grey by 10%" $
-			lighten grey 10 `shouldBe` Color 76 76 76 0
+			lighten grey 10 `shouldBe` (50, 50, 60)
 		it "Increase lightness of Grey by 20%" $
-			lighten grey 20 `shouldBe` Color 101 101 101 0
+			lighten grey 20 `shouldBe` (50, 50, 70)
 		it "Increase lightness of Grey by 30%" $
-			lighten grey 30 `shouldBe` Color 127 127 127 0
+			lighten grey 30 `shouldBe` (50, 50, 80)
 		it "Increase lightness of Grey by 40%" $
-			lighten grey 40 `shouldBe` Color 152 152 152 0
+			lighten grey 40 `shouldBe` (50, 50, 90)
 		it "Increase lightness of Grey by 50%" $
-			lighten grey 50 `shouldBe` Color 178 178 178 0
+			lighten grey 50 `shouldBe` (50, 50, 100)
 
 {-
 -- TODO: run this entire list

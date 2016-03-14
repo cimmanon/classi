@@ -70,9 +70,12 @@ Formula from the W3C: http://www.w3.org/TR/css3-color/#hsl-color
 h = 0.0-360.0
 s = 0.0-100.0
 l = 0.0-100.0
+
+Note that Sass uses this formula, but their's seems to come out correctly.
+TODO: figure out why this doesn't come out correctly for Purple (hsl(300, 100, 25))
 -}
-hslrgb :: (Integral a, RealFrac b) => a -> b -> b -> Color
-hslrgb h s l = Color r g b 0
+hslrgb :: (Integral a, RealFrac b) => (a, b, b) -> (Channel, Channel, Channel)
+hslrgb (h, s, l) = (r, g, b)
 	where
 		-- normalize h, s, l to be fractions 0..1
 		h' = fromIntegral h / 360
@@ -116,8 +119,8 @@ properRound x =
 
 -- Formula: http://en.wikipedia.org/wiki/HSL_and_HSV
 
-rgbhsl :: (Integral a, RealFrac b) => Channel -> Channel -> Channel -> (a, b, b)
-rgbhsl r g b = (h, s * 100, l * 100)
+rgbhsl :: (Integral a, RealFrac b) => (Channel, Channel, Channel) -> (a, b, b)
+rgbhsl (r, g, b) = (h, s * 100, l * 100)
 	where
 		r' = fromIntegral r / 255
 		g' = fromIntegral g / 255
@@ -147,42 +150,41 @@ rMod a b = a - fromIntegral (truncate $ a / b)
                                                                       | Color adjustments
 }----------------------------------------------------------------------------------------------------}
 
-adjustColor :: (Integral a, RealFrac b) => Color -> (a -> a) -> (b -> b) -> (b -> b) -> Color
-adjustColor c adjustH adjustS adjustL =
-	hslrgb (adjustH h) (clamp $ adjustS s) (clamp $ adjustL l)
+adjustColor :: (Integral a, RealFrac b) => (a, b, b) -> (a -> a) -> (b -> b) -> (b -> b) -> (a, b, b)
+adjustColor (h, s, l) adjustH adjustS adjustL =
+	(adjustH h, clamp $ adjustS s, clamp $ adjustL l)
 	where
-		(h, s, l) = rgbhsl (red c) (green c) (blue c)
 		clamp = min 100 . max 0
 
 --------------------------------------------------------------------- | Hue
 
-adjustHue :: (Integral a) => Color -> a -> Color
+adjustHue :: (Integral a, RealFrac b) => (a, b, b) -> a -> (a, b, b)
 adjustHue c x = adjustColor c (+ x) id id
 
 -- Sass doesn't have specific functions that adjust the hue in one direction or the other
 
 --------------------------------------------------------------------- | Saturation
 
-adjustSaturation :: (RealFrac a) => Color -> a -> Color
+adjustSaturation :: (Integral a, RealFrac b) => (a, b, b) -> b -> (a, b, b)
 adjustSaturation c x = adjustColor c id (+ x) id
 
 -- convenient shortcuts
-saturate :: (RealFrac a) => Color -> a -> Color
+saturate :: (Integral a, RealFrac b) => (a, b, b) -> b -> (a, b, b)
 saturate = adjustSaturation
 
-desaturate :: (RealFrac a) => Color -> a -> Color
+desaturate :: (Integral a, RealFrac b) => (a, b, b) -> b -> (a, b, b)
 desaturate c x = adjustSaturation c (-x)
 
 --------------------------------------------------------------------- | Lightness
 
-adjustLightness :: (RealFrac a) => Color -> a -> Color
+adjustLightness :: (Integral a, RealFrac b) => (a, b, b) -> b -> (a, b, b)
 adjustLightness c x = adjustColor c id id (+ x)
 
 -- convenient shortcuts
-lighten :: (RealFrac a) => Color -> a -> Color
+lighten :: (Integral a, RealFrac b) => (a, b, b) -> b -> (a, b, b)
 lighten = adjustLightness
 
-darken :: (RealFrac a) => Color -> a -> Color
+darken :: (Integral a, RealFrac b) => (a, b, b) -> b -> (a, b, b)
 darken c x = adjustLightness c (-x)
 
 {----------------------------------------------------------------------------------------------------{
