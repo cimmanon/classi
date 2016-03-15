@@ -70,9 +70,6 @@ Formula from the W3C: http://www.w3.org/TR/css3-color/#hsl-color
 h = 0.0-360.0
 s = 0.0-100.0
 l = 0.0-100.0
-
-Note that Sass uses this formula, but their's seems to come out correctly.
-TODO: figure out why this doesn't come out correctly for Purple (hsl(300, 100, 25))
 -}
 hslrgb :: (Integral a, RealFrac b) => (a, b, b) -> (Channel, Channel, Channel)
 hslrgb (h, s, l) = (r, g, b)
@@ -86,7 +83,7 @@ hslrgb (h, s, l) = (r, g, b)
 		m2 = if l' <= 0.5
 			then l' * (s' + 1)
 			else l' + s' - l' * s'
-		toChannel x = properRound $ 255 * hue2rgb m1 m2 x
+		toChannel x = properRound $ roundPlaces 8 $ 255 * hue2rgb m1 m2 x
 		r = toChannel $ h' + 1.0 / 3.0
 		g = toChannel h'
 		b = toChannel $ h' - 1.0 / 3.0
@@ -112,6 +109,16 @@ properRound x =
 		if frac >= 0.5
 			then whole + 1
 			else whole
+
+-- some of our rounding needs to be a bit fuzzy to guarantee we get the right values
+-- in particular, hslrgb conversion for Olive, Purple, and Teal come out to be off-by-one without it
+roundPlaces :: (Integral a, RealFrac b) => a -> b -> b
+roundPlaces places n =
+	let
+		multiplier = fromIntegral $ 10 ^ places
+		rounded = fromIntegral $ properRound $ n * multiplier
+	in
+		rounded / multiplier
 
 {----------------------------------------------------------------------------------------------------{
                                                                       | RGB to HSL

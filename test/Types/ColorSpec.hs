@@ -37,8 +37,8 @@ spec = do
 		purple = (128, 0, 128)
 		teal = (0, 128, 128)
 
-	-- test data pulled from http://www.rapidtables.com/convert/color/hsl-to-rgb.htm
 	describe "HSL to RGB" $ do
+		-- test data pulled from http://www.rapidtables.com/convert/color/hsl-to-rgb.htm
 		it "Red" $
 			hslrgb (0, 100, 50) `shouldBe` red
 		it "Lime" $
@@ -63,6 +63,19 @@ spec = do
 			hslrgb (300, 100, 25) `shouldBe` purple
 		it "Teal" $
 			hslrgb (180, 100, 25) `shouldBe` teal
+
+		-- adding a few extra tests here just to be safe
+		-- from W3C specification
+		it "Light Green" $
+			hslrgb (120, 100, 75) `shouldBe` (128, 255, 128)
+		it "Pastel Green" $
+			hslrgb (120, 75, 75) `shouldBe` (143, 239, 143)
+		it "Orange" $
+			hslrgb (30, 100, 50) `shouldBe` (255, 128, 0)
+
+		-- Cimmanon dark pink
+		it "Orange" $
+			hslrgb (324, 100, 39) `shouldBe` (199, 0, 119)
 
 	describe "RGB to HSL" $ do
 		it "Red" $
