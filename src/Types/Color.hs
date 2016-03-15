@@ -159,7 +159,7 @@ rMod a b = a - fromIntegral (truncate $ a / b)
 
 adjustColor :: (Integral a, RealFrac b) => (a, b, b) -> (a -> a) -> (b -> b) -> (b -> b) -> (a, b, b)
 adjustColor (h, s, l) adjustH adjustS adjustL =
-	((adjustH h) `mod` 360, clamp $ adjustS s, clamp $ adjustL l)
+	(adjustH h `mod` 360, clamp $ adjustS s, clamp $ adjustL l)
 	where
 		clamp = min 100 . max 0
 
