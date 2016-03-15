@@ -55,7 +55,9 @@ hslColor = do
 	s <- value <$> do commaDelimiter *> percentage
 	l <- value <$> do commaDelimiter *> percentage
 	spaces *> satisfy (== ')')
-	return $ hslrgb h s l
+	let
+		(r, g, b) = hslrgb (h, s, l)
+	return $ Color r g b 1
 
 hslaColor :: Parser Color
 hslaColor = do
@@ -66,7 +68,9 @@ hslaColor = do
 	l <- value <$> do commaDelimiter *> percentage
 	a <- read <$> do commaDelimiter *> decimal
 	spaces *> satisfy (== ')')
-	return $ (hslrgb h s l) { alpha = a }
+	let
+		(r, g, b) = hslrgb (h, s, l)
+	return $ Color r g b a
 
 keyword :: Parser Color
 keyword = try $ do
