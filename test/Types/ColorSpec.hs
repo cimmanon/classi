@@ -108,6 +108,9 @@ spec = do
 		it "Increase hue of Red by 100deg" $
 			adjustHue (rgbhsl red) 100 `shouldBe` (100, 100, 50)
 
+		it "Decrease hue of Red by 10deg" $
+			adjustHue (rgbhsl red) (-10) `shouldBe` (350, 100, 50)
+
 	describe "Adjust Saturation" $ do
 		it "Decrease saturation of Red by 10%" $
 			desaturate (rgbhsl red) 10 `shouldBe` (0, 90, 50)
