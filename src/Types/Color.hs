@@ -7,8 +7,10 @@ module Types.Color
 	, keywords
 	)-} where
 
+import Data.Monoid ((<>))
 import Data.Word (Word8)
 import Control.Arrow (second)
+import Numeric (showHex)
 
 {-
 https://developer.mozilla.org/en-US/docs/Web/CSS/color_value
@@ -156,6 +158,13 @@ rgbhsl (r, g, b) = (h, s * 100, l * 100)
 -- a `mod` function for RealFrac types
 rMod :: (RealFrac a) => a -> a -> a
 rMod a b = a - fromIntegral (truncate $ a / b)
+
+{----------------------------------------------------------------------------------------------------{
+                                                                      | RGB to Hexidecimal
+}----------------------------------------------------------------------------------------------------}
+
+rgbhex :: (Channel, Channel, Channel) -> String
+rgbhex (r, g, b) = "#" <> showHex r "" <> showHex g "" <> showHex b ""
 
 {----------------------------------------------------------------------------------------------------{
                                                                       | Color adjustments
