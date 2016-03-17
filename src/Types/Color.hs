@@ -199,6 +199,17 @@ darken :: (Integral a, RealFrac b) => (a, b, b) -> b -> (a, b, b)
 darken c x = adjustLightness c (-x)
 
 {----------------------------------------------------------------------------------------------------{
+                                                                      | Blending
+}----------------------------------------------------------------------------------------------------}
+
+blend :: (RealFrac a) => (Channel, Channel, Channel) -> (Channel, Channel, Channel) -> a -> (Channel, Channel, Channel)
+blend (r1, g1, b1) (r2, g2, b2) ratio =
+	(blendChannel r1 r2 ratio, blendChannel g1 g2 ratio, blendChannel b1 b2 ratio)
+
+blendChannel :: RealFrac a => Channel -> Channel -> a -> Channel
+blendChannel c1 c2 ratio = properRound $ (fromIntegral c1 * ratio) + (fromIntegral c2 * (1 - ratio))
+
+{----------------------------------------------------------------------------------------------------{
                                                                       | Color names
 }----------------------------------------------------------------------------------------------------}
 
