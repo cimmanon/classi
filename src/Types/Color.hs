@@ -133,7 +133,7 @@ roundPlaces places n =
 -- Formula: http://en.wikipedia.org/wiki/HSL_and_HSV
 
 rgbhsl :: (Integral a, RealFrac b) => (Channel, Channel, Channel) -> (a, b, b)
-rgbhsl (r, g, b) = (h, s * 100, l * 100)
+rgbhsl (r, g, b) = (properRound h, s * 100, l * 100)
 	where
 		r' = fromIntegral r / 255
 		g' = fromIntegral g / 255
@@ -147,9 +147,9 @@ rgbhsl (r, g, b) = (h, s * 100, l * 100)
 			| cMax == r' = ((g' - b') / delta) `rMod` 6
 			| cMax == g' = (b' - r') / delta + 2
 			| cMax == b' = (r' - g') / delta + 4
-		h = round h' * 60 `mod` 360
-		-- the use of `round` here forces our `a` to be an Integral
-		-- is this acceptable?
+		h = case h' * 60 `rMod` 360 of
+			x | x < 0 -> 360 + x
+			x -> x
 		s
 			| l > 0 = delta / (1 - abs (2 * l - 1))
 			| otherwise = 0
@@ -157,7 +157,7 @@ rgbhsl (r, g, b) = (h, s * 100, l * 100)
 
 -- a `mod` function for RealFrac types
 rMod :: (RealFrac a) => a -> a -> a
-rMod a b = a - fromIntegral (truncate $ a / b)
+rMod a b = a - b * fromIntegral (truncate $ a / b)
 
 {----------------------------------------------------------------------------------------------------{
                                                                       | RGB to Hexidecimal

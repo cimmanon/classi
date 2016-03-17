@@ -37,6 +37,9 @@ spec = do
 		purple = (128, 0, 128)
 		teal = (0, 128, 128)
 
+		-- other colors
+		babyPink = (252, 233, 239)
+
 	describe "HSL to RGB" $ do
 		-- test data pulled from http://www.rapidtables.com/convert/color/hsl-to-rgb.htm
 		it "Red" $
@@ -73,9 +76,10 @@ spec = do
 		it "Orange" $
 			hslrgb (30, 100, 50) `shouldBe` (255, 128, 0)
 
-		-- Cimmanon dark pink
-		it "Orange" $
+		it "Cimmanon dark pink" $
 			hslrgb (324, 100, 39) `shouldBe` (199, 0, 119)
+		it "Baby Pink" $
+			hslrgb (341, 76, 95) `shouldBe` babyPink
 
 	describe "RGB to HSL" $ do
 		it "Red" $
@@ -102,6 +106,11 @@ spec = do
 			rgbhslrgb purple `shouldBe` purple
 		it "Teal" $
 			rgbhslrgb teal `shouldBe` teal
+
+		it "Cimmanon dark pink" $
+			rgbhslrgb (199, 0, 119) `shouldBe` (199, 0, 119)
+		it "Baby Pink" $
+			rgbhslrgb babyPink `shouldBe` babyPink
 
 	describe "Adjust Hue" $ do
 		it "Increase hue of Red by 10deg" $
