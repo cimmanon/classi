@@ -10,6 +10,7 @@ import Text.Parsec.String (Parser)
 
 import Types
 import Parsers.Color
+import Parsers.Selector
 
 {----------------------------------------------------------------------------------------------------{
                                                                       | Primitives
