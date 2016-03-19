@@ -2,11 +2,15 @@ module Parsers.Common where
 
 import Control.Applicative ((*>), (<*), (<$>), (<*>))
 import Data.Char
-import Data.Monoid ((<>))
+import Data.Monoid ((<>), mappend, Monoid)
 import Text.Parsec
 import Text.Parsec.String (Parser)
 
 import Types
+
+-- shortcut operator for mappending the results of parsers
+(<++>) :: (Monoid a) => Parser a -> Parser a -> Parser a
+x <++> y = mappend <$> x <*> y
 
 decimal :: Parser String
 decimal = do
