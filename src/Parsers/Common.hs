@@ -2,7 +2,7 @@ module Parsers.Common where
 
 import Control.Applicative ((*>), (<*), (<$>), (<*>))
 import Data.Char
-import Data.Monoid ((<>), mappend, Monoid)
+import Data.Monoid ((<>), mappend, Monoid, mconcat)
 import Text.Parsec
 import Text.Parsec.String (Parser)
 
@@ -32,6 +32,13 @@ percentage = Dimension
 	<*> string "%"
 	<?> "percentage"
 
+escapedChar :: Parser String
+escapedChar = (:)
+	<$> try (char '\\')
+	<*> ((:) <$> anyChar <*> return [])
+
+mconcatP :: Monoid a => [Parser a] -> Parser a
+mconcatP = fmap mconcat . sequence
 {-
 not quite sure exactly what characters we'll want to use for end of token delimiters
 absolutely certain on the following:
@@ -49,3 +56,13 @@ maybe tokens:
 -}
 isEndOfToken :: Char -> Bool
 isEndOfToken = (`elem` " ,\n\t\r;()")
+
+quotedString :: Parser String
+quotedString = mconcatP
+	[ try $ string "\""
+	, mconcat <$> many (many1 (satisfy (`notElem` "\"")) <|> escapedChar)
+	, string "\""
+	]
+
+unquotedString :: Parser String
+unquotedString = mconcat <$> try (many1 $ many1 (try $ satisfy (`notElem` "\" \\[]")) <|> escapedChar)

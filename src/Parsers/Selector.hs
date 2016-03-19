@@ -11,14 +11,6 @@ import Text.Parsec.String (Parser)
 
 import Parsers.Common
 
--- should this go into Common?
-escapedChar :: Parser String
-escapedChar = (:)
-	<$> try (char '\\')
-	<*> ((:) <$> anyChar <*> return [])
-
-mconcatP :: Monoid a => [Parser a] -> Parser a
-mconcatP = fmap mconcat . sequence
 
 toList :: a -> [a]
 toList = (: [])
@@ -29,7 +21,7 @@ escapedLetters = (:)
 	<*> many1 letter
 
 simpleSelectors :: Parser [String]
-simpleSelectors = many1 $ elementSelector <|> classSelector <|> idSelector <|> pseudoSelector
+simpleSelectors = many1 $ elementSelector <|> idSelector <|> classSelector <|> attributeSelector <|> pseudoSelector
 
 elementSelector :: Parser String
 elementSelector = mconcat <$> many1 (many1 letter <|> escapedLetters)
@@ -69,6 +61,22 @@ pseudoSelector = doubleColon <|> singleColon
 			, string ")"
 			]
 
+attributeSelector :: Parser String
+attributeSelector = mconcatP
+	[ try $ string "["
+	, spaces *> attributeName <* spaces
+	, operator <|> return []
+	, try (spaces *> satisfy (`elem` "iI") *> return " i") <|> return []
+	, spaces *> string "]"
+	]
+	where
+		attributeName = many1 $ satisfy (`elem` '-' : alphabeticalCharacters)
+		operatorCharacters = satisfy (`elem` "~|^$*=")
+		operator = mconcatP
+			[ try $ many1 operatorCharacters <* spaces
+			, quotedString <|> unquotedString
+			]
+
 -- https://www.w3.org/International/questions/qa-escapes
 -- this is an escape character, followed by N amount of hexadecimal characters, followed by an optional space
 unicodeCharacter :: Parser String
@@ -82,9 +90,16 @@ unicodeCharacter = (++)
 		optionalSingleSpace = try $
 			(toList <$> char ' ') <|> return []
 
+{----------------------------------------------------------------------------------------------------{
+                                                                      | Helpers
+}----------------------------------------------------------------------------------------------------}
+
+alphabeticalCharacters :: [Char]
+alphabeticalCharacters = ['a'..'z'] ++ ['A'..'Z']
+
 -- classes and ids must begin with certain characters after their corresponding identifier character
 validStartCharacters :: [Char]
-validStartCharacters = '-' : '_' : ['a'..'z'] ++ ['A'..'Z']
+validStartCharacters = '-' : '_' : alphabeticalCharacters
 
 selectorInvalidCharacters :: [Char]
 selectorInvalidCharacters = "~!@$%^&*()+=,./';:\"?<>[]{}|`# "
