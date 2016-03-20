@@ -1,6 +1,6 @@
 module Parsers.Color
-	( color
-	) where
+{-	( color
+	)-} where
 
 import Control.Applicative ((*>), (<*), (<$>), (<*>))
 import Data.Char
@@ -22,8 +22,8 @@ hexColor = do
 	satisfy (== '#')
 	x <- many1 hexDigit
 	case x of
-		r1:r2:g1:g2:b1:b2:[] -> return $ Color (hex2Int [r1, r2]) (hex2Int [g1, g2]) (hex2Int [b1, b2]) 0
-		r:g:b:[] -> return $ Color (hex2Int [r, r]) (hex2Int [g, g]) (hex2Int [b, b]) 0
+		r1:r2:g1:g2:b1:b2:[] -> return $ Color (hex2Int [r1, r2]) (hex2Int [g1, g2]) (hex2Int [b1, b2]) 1
+		r:g:b:[] -> return $ Color (hex2Int [r, r]) (hex2Int [g, g]) (hex2Int [b, b]) 1
 		_ -> unexpected "Invalid format for hexadecimal color (eg. #333 or #333333)"
 
 rgbColor :: Parser Color
@@ -34,7 +34,7 @@ rgbColor = do
 	g <- read <$> do commaDelimiter *> many1 digit
 	b <- read <$> do commaDelimiter *> many1 digit
 	spaces *> satisfy (== ')')
-	return $ Color r g b 0
+	return $ Color r g b 1
 
 rgbaColor :: Parser Color
 rgbaColor = do
