@@ -51,8 +51,14 @@ spec = do
 			parse attributeSelector "" "[foo^=bar] ignore" `shouldBe` Right "[foo^=bar]"
 		it "Attribute with case insensitive value" $
 			parse attributeSelector "" "[foo=bar i] ignore" `shouldBe` Right "[foo=bar i]"
+		it "Attribute with single quoted value" $
+			parse attributeSelector "" "[foo='bar asdf'] ignore" `shouldBe` Right "[foo='bar asdf']"
 		it "Attribute with quoted value" $
 			parse attributeSelector "" "[foo=\"bar asdf\"] ignore" `shouldBe` Right "[foo=\"bar asdf\"]"
+		it "Attribute with empty quotes" $
+			parse attributeSelector "" "[foo=\"\"] ignore" `shouldBe` Right "[foo=\"\"]"
+		it "Attribute with an escaped quote" $
+			parse attributeSelector "" "[foo=\"\\\"\"] ignore" `shouldBe` Right "[foo=\"\\\"\"]"
 		it "Attribute with quoted and case insensitive value" $
 			parse attributeSelector "" "[foo=\"bar asdf\" i] ignore" `shouldBe` Right "[foo=\"bar asdf\" i]"
 

@@ -74,8 +74,10 @@ attributeSelector = mconcatP
 		operatorCharacters = satisfy (`elem` "~|^$*=")
 		operator = mconcatP
 			[ try $ many1 operatorCharacters <* spaces
-			, quotedString <|> unquotedString
+			, quotedString <|> unquotedValue
 			]
+		unquotedValue = unquotedString "\" \\[]"
+
 
 -- https://www.w3.org/International/questions/qa-escapes
 -- this is an escape character, followed by N amount of hexadecimal characters, followed by an optional space

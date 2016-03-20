@@ -58,11 +58,13 @@ isEndOfToken :: Char -> Bool
 isEndOfToken = (`elem` " ,\n\t\r;()")
 
 quotedString :: Parser String
-quotedString = mconcatP
-	[ try $ string "\""
-	, mconcat <$> many (many1 (satisfy (`notElem` "\"")) <|> escapedChar)
-	, string "\""
-	]
+quotedString = quoted '"' <|> quoted '\''
+	where
+		quoted char = mconcatP
+			[ string $ char : []
+			, mconcat <$> many (many1 (satisfy (`notElem` char : "\\")) <|> escapedChar)
+			, string $ char : []
+			]
 
-unquotedString :: Parser String
-unquotedString = mconcat <$> try (many1 $ many1 (try $ satisfy (`notElem` "\" \\[]")) <|> escapedChar)
+unquotedString :: [Char] -> Parser String
+unquotedString invalidCharacters = mconcat <$> try (many1 $ many1 (try $ satisfy (`notElem` '\\' : invalidCharacters)) <|> escapedChar)
